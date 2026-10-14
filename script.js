@@ -1,21 +1,67 @@
-// ============ QUIZ LOGIC ============
-
+let currentSubject = "";
+let currentSection = "";
+let currentLevel = "";
 let currentQuestions = [];
 let currentIndex = 0;
 let userAnswers = [];
-let currentLevel = "";
 let timerInterval = null;
 let secondsElapsed = 0;
 
-// ---------- START QUIZ ----------
+const subjectTitles = {
+  english: "📖 English",
+  gk: "🌍 General Knowledge",
+  gs: "📚 General Studies",
+  math: "🧮 Mathematics"
+};
+
+// ========== SUBJECT SELECT ==========
+function selectSubject(subject) {
+  currentSubject = subject;
+  document.getElementById("section-title").textContent = subjectTitles[subject];
+
+  const sections = Object.keys(questionsDB[subject].sections);
+  const list = document.getElementById("sections-list");
+  list.innerHTML = "";
+
+  sections.forEach(sec => {
+    const btn = document.createElement("button");
+    btn.className = "section-btn";
+    btn.textContent = sec;
+    btn.onclick = () => selectSection(sec);
+    list.appendChild(btn);
+  });
+
+  showScreen("section-screen");
+}
+
+function backToSubjects() {
+  currentSubject = "";
+  currentSection = "";
+  showScreen("start-screen");
+}
+
+// ========== SECTION SELECT ==========
+function selectSection(section) {
+  currentSection = section;
+  document.getElementById("level-title").textContent = section;
+  showScreen("level-screen");
+}
+
+function backToSections() {
+  currentSection = "";
+  showScreen("section-screen");
+}
+
+// ========== START QUIZ ==========
 function startQuiz(level) {
   currentLevel = level;
+  const data = questionsDB[currentSubject].sections[currentSection];
 
   if (level === "mixed") {
-    const all = [...questionsDB.easy, ...questionsDB.moderate, ...questionsDB.hard];
-    currentQuestions = shuffle(all).slice(0, 40); // 40 random questions
+    const all = [...data.easy, ...data.moderate, ...data.hard];
+    currentQuestions = shuffle(all);
   } else {
-    currentQuestions = shuffle([...questionsDB[level]]);
+    currentQuestions = shuffle([...data[level]]);
   }
 
   currentIndex = 0;
@@ -24,14 +70,13 @@ function startQuiz(level) {
 
   document.getElementById("level-badge").textContent =
     level === "mixed" ? "Mixed" : level.charAt(0).toUpperCase() + level.slice(1);
-  document.getElementById("level-badge").className = "badge";
 
   showScreen("quiz-screen");
   startTimer();
   renderQuestion();
 }
 
-// ---------- SHUFFLE ----------
+// ========== SHUFFLE ==========
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -41,7 +86,7 @@ function shuffle(arr) {
   return a;
 }
 
-// ---------- TIMER ----------
+// ========== TIMER ==========
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -52,7 +97,7 @@ function startTimer() {
   }, 1000);
 }
 
-// ---------- RENDER QUESTION ----------
+// ========== RENDER QUESTION ==========
 function renderQuestion() {
   const q = currentQuestions[currentIndex];
 
@@ -83,13 +128,11 @@ function renderQuestion() {
     currentIndex === currentQuestions.length - 1 ? "Last Question" : "Next ➡";
 }
 
-// ---------- SELECT OPTION ----------
-function selectOption(optionIndex) {
-  userAnswers[currentIndex] = optionIndex;
+function selectOption(i) {
+  userAnswers[currentIndex] = i;
   renderQuestion();
 }
 
-// ---------- NAVIGATION ----------
 function nextQuestion() {
   if (currentIndex < currentQuestions.length - 1) {
     currentIndex++;
@@ -104,21 +147,16 @@ function prevQuestion() {
   }
 }
 
-// ---------- SUBMIT ----------
+// ========== SUBMIT ==========
 function submitQuiz() {
   const unanswered = userAnswers.filter((a) => a === null).length;
   if (unanswered > 0) {
-    const confirmSubmit = confirm(
-      `${unanswered} question(s) abhi tak attempt nahi kiye. Submit karna chahte ho?`
-    );
-    if (!confirmSubmit) return;
+    if (!confirm(`${unanswered} question(s) attempt nahi kiye. Submit karein?`)) return;
   }
 
   clearInterval(timerInterval);
 
-  let correct = 0;
-  let wrong = 0;
-  let skipped = 0;
+  let correct = 0, wrong = 0, skipped = 0;
 
   currentQuestions.forEach((q, i) => {
     if (userAnswers[i] === null) skipped++;
@@ -135,22 +173,20 @@ function submitQuiz() {
   document.getElementById("skipped-count").textContent = skipped;
 
   let msg = "";
-  if (percentage >= 90) msg = "🌟 Outstanding! Tum topper material ho!";
-  else if (percentage >= 70) msg = "👏 Excellent! Bahut acha kiya!";
-  else if (percentage >= 50) msg = "👍 Good! Thoda aur practice karo.";
-  else if (percentage >= 30) msg = "📚 Average. Practice se sudharo.";
-  else msg = "💪 Keep practicing! You can do it!";
+  if (percentage >= 90) msg = "🌟 Outstanding!";
+  else if (percentage >= 70) msg = "👏 Excellent!";
+  else if (percentage >= 50) msg = "👍 Good! Thoda practice karo.";
+  else if (percentage >= 30) msg = "📚 Average. Practice karo.";
+  else msg = "💪 Keep practicing!";
 
-  document.getElementById("result-msg").textContent =
-    `${percentage}% — ${msg}`;
-
+  document.getElementById("result-msg").textContent = `${percentage}% — ${msg}`;
   document.getElementById("review-box").innerHTML = "";
   document.getElementById("review-box").classList.remove("active");
 
   showScreen("result-screen");
 }
 
-// ---------- REVIEW ANSWERS ----------
+// ========== REVIEW ==========
 function reviewAnswers() {
   const box = document.getElementById("review-box");
 
@@ -169,13 +205,11 @@ function reviewAnswers() {
     const div = document.createElement("div");
     div.className = "review-item " + (isCorrect ? "correct" : "wrong");
 
-    const userText = skipped
-      ? "Not Attempted"
-      : q.options[userAns];
+    const userText = skipped ? "Not Attempted" : q.options[userAns];
 
     div.innerHTML = `
       <p class="q">Q${i + 1}. ${q.q}</p>
-      <p class="ans">✔ Correct Answer: ${q.options[q.answer]}</p>
+      <p class="ans">✔ Correct: ${q.options[q.answer]}</p>
       <p class="user">${skipped ? "⚠" : (isCorrect ? "✔" : "✘")} Your Answer: ${userText}</p>
       <p class="exp">💡 ${q.explanation}</p>
     `;
@@ -186,9 +220,9 @@ function reviewAnswers() {
   box.scrollIntoView({ behavior: "smooth" });
 }
 
-// ---------- SCREEN SWITCH ----------
-function showScreen(screenId) {
+// ========== SCREEN ==========
+function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
-  document.getElementById(screenId).classList.add("active");
+  document.getElementById(id).classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
