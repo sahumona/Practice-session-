@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MPSI English Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+      <h1>🎯 MPSI English Quiz</h1>
+      <p class="subtitle">Apna level choose karo aur quiz shuru karo!</p>
+
+      <div class="levels">
+        <button class="level-btn easy" onclick="startQuiz('easy')">
+          <span>🟢 Easy Level</span>
+          <small>35 Questions</small>
+        </button>
+        <button class="level-btn moderate" onclick="startQuiz('moderate')">
+          <span>🟡 Moderate Level</span>
+          <small>35 Questions</small>
+        </button>
+        <button class="level-btn hard" onclick="startQuiz('hard')">
+          <span>🔴 Hard Level</span>
+          <small>35 Questions</small>
+        </button>
+      </div>
+
+      <button class="level-btn mixed" onclick="startQuiz('mixed')">
+        <span>🎲 Mixed (All Levels)</span>
+        <small>Random questions from all levels</small>
+      </button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="screen">
+      <div class="topbar">
+        <div class="badge" id="level-badge">Easy</div>
+        <div class="badge timer" id="timer">⏱ 00:00</div>
+        <div class="badge" id="progress">Q 1 / 35</div>
+      </div>
+
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+
+      <div class="question-box">
+        <h2 id="question-text">Question loading...</h2>
+        <div id="options" class="options"></div>
+      </div>
+
+      <div class="controls">
+        <button id="prev-btn" onclick="prevQuestion()">⬅ Previous</button>
+        <button id="next-btn" onclick="nextQuestion()">Next ➡</button>
+        <button id="submit-btn" onclick="submitQuiz()">✅ Submit</button>
+      </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="screen">
+      <h1>🏆 Result</h1>
+      <div class="score-circle">
+        <span id="score-text">0 / 0</span>
+      </div>
+      <p id="result-msg" class="result-msg"></p>
+
+      <div class="stats">
+        <div class="stat correct">
+          <h3 id="correct-count">0</h3>
+          <p>Correct</p>
+        </div>
+        <div class="stat wrong">
+          <h3 id="wrong-count">0</h3>
+          <p>Wrong</p>
+        </div>
+        <div class="stat skipped">
+          <h3 id="skipped-count">0</h3>
+          <p>Skipped</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button onclick="reviewAnswers()">📖 Review Answers</button>
+        <button onclick="location.reload()">🔄 Restart Quiz</button>
+      </div>
+
+      <div id="review-box" class="review-box"></div>
+    </div>
+
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
